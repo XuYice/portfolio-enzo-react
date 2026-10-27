@@ -338,7 +338,7 @@ html[lang="zh"] .modal-body li{font-size:15.5px; line-height:1.85}
   transition:background .2s,border-color .2s;
 }
 .lang button[aria-pressed="true"]{background:var(--red); border-color:var(--red); color:var(--seal-text)}
-.lang button:first-child{font-family:var(--brush); font-size:22px; font-weight:400}
+.lang .lang-zh{font-family:var(--brush); font-size:22px; font-weight:400}
 
 .nav{
   position:fixed; bottom:max(2px,calc((100vh - min(80vh,720px))/2 - 82px)); left:50%; transform:translateX(-50%);
