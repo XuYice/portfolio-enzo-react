@@ -29,6 +29,18 @@ export const CONTACT = {
 
 // Language-independent data: companies, tags.
 const COMPANIES = ['Grupo Wolf360', 'Testing Company'];
+/**
+ * Images and links per project (same order as the cards). Put image files in
+ * public/projects/<name>/ and reference them as 'projects/<name>/file.png'.
+ */
+const PROJECT_MEDIA: { images?: string[]; links?: { label: string; url: string }[] }[] = [
+  {}, // App Fraga & Bitello — e.g. links: [{ label: 'App Store', url: '…' }, { label: 'Google Play', url: '…' }]
+  {}, // Simulador de Consórcio
+  {}, // Barnout
+  {}, // Franquias Piccadilly
+  {}, // Blog & Campanhas
+  {}, // Automação de Testes
+];
 const PROJECT_TAGS = [
   ['React Native', 'TypeScript', 'Expo', 'Laravel', 'Sentry'],
   ['Laravel', 'Livewire', 'MySQL'],
@@ -50,12 +62,21 @@ interface Translation {
     kicker: string; role: string; tagline: string; hint: string; openHint: string;
     cv: string; end: string;
     more: string; context: string; did: string; result: string; stack: string; close: string;
+    myRole: string; challenges: string; gallery: string; links: string;
   } & Record<SectionId, string>;
   about: { paragraphs: string[]; facts: string[] };
   /** `before` = earlier role(s) at the same company. */
   jobs: { title: string; when: string; before?: string; bullets: string[] }[];
   /** `desc` is the card text; the rest is shown in the project modal. */
-  projects: { title: string; desc: string; meta: string; context: string; did: string[]; result?: string }[];
+  projects: {
+    title: string; desc: string; meta: string; context: string; did: string[]; result?: string;
+    /** Your role in one line, e.g. "Dev mobile principal · time de 3". */
+    role?: string;
+    /** Hard problems you hit and how you decided to solve them. */
+    challenges?: string[];
+    /** Captions for PROJECT_MEDIA images, same order. */
+    captions?: string[];
+  }[];
   skills: string[];
   contact: { question: string; text: string };
 }
@@ -69,6 +90,7 @@ const pt: Translation = {
     openHint: 'clique para abrir o pergaminho',
     cv: 'currículo.pdf ↓',
     more: 'ver detalhes', context: 'O projeto', did: 'O que eu fiz', result: 'Resultado', stack: 'Tecnologias', close: 'Fechar',
+    myRole: 'Meu papel', challenges: 'Desafios e decisões', gallery: 'Imagens', links: 'Links',
     end: 'fim',
     hero: 'Início', about: 'Sobre', experience: 'Experiência', projects: 'Projetos', skills: 'Habilidades', contact: 'Contato',
   },
@@ -189,6 +211,7 @@ const en: Translation = {
     openHint: 'click to open the scroll',
     cv: 'resume.pdf ↓',
     more: 'see details', context: 'The project', did: 'What I did', result: 'Result', stack: 'Stack', close: 'Close',
+    myRole: 'My role', challenges: 'Challenges & decisions', gallery: 'Images', links: 'Links',
     end: 'the end',
     hero: 'Start', about: 'About', experience: 'Experience', projects: 'Projects', skills: 'Skills', contact: 'Contact',
   },
@@ -309,6 +332,7 @@ const zh: Translation = {
     openHint: 'Clique para abrir · Click to open',
     cv: '简历.pdf ↓',
     more: '查看详情', context: '项目背景', did: '我做了什么', result: '成果', stack: '技术栈', close: '关闭',
+    myRole: '我的角色', challenges: '难点与决策', gallery: '图片', links: '链接',
     end: '完',
     hero: '开始', about: '关于我', experience: '经历', projects: '作品', skills: '技能', contact: '联系',
   },
@@ -428,7 +452,7 @@ export function getContent(lang: Lang) {
   return {
     ...t,
     jobs: t.jobs.map((j, i) => ({ ...j, company: COMPANIES[i] })),
-    projects: t.projects.map((p, i) => ({ ...p, num: NUMERALS[i], tags: PROJECT_TAGS[i] })),
+    projects: t.projects.map((p, i) => ({ ...p, num: NUMERALS[i], tags: PROJECT_TAGS[i], ...PROJECT_MEDIA[i] })),
     skills: SKILL_GROUPS.map((g, i) => ({ ...g, label: t.skills[i] })),
   };
 }

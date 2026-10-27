@@ -109,6 +109,18 @@ export function Scroll({ open, children }: { open: boolean; children: ReactNode 
     };
   }, [mobile, currentIndex]);
 
+  // Desktop: panels are one viewport wide, so a window resize changes every offset. Re-align the
+  // track on the panel being read, otherwise it ends up showing parts of two panels.
+  useEffect(() => {
+    if (mobile) return;
+    const onResize = () => {
+      const el = document.getElementById(activeRef.current);
+      if (el) trackRef.current!.scrollLeft = el.offsetLeft;
+    };
+    addEventListener('resize', onResize);
+    return () => removeEventListener('resize', onResize);
+  }, [mobile]);
+
   const goTo = useCallback(
     (id: SectionId) => {
       const el = document.getElementById(id);
