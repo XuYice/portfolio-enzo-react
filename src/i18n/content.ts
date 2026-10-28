@@ -24,7 +24,7 @@ export const CONTACT = {
   email: 'yicexu@gmail.com',
   linkedin: 'https://linkedin.com/in/yice-xu',
   github: 'https://github.com/XuYice',
-  cv: 'Yice_Xu_Resume.pdf',
+  cv: 'Yice_Xu_CV.pdf',
 };
 
 // Language-independent data: companies, tags.
