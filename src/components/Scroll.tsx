@@ -1,5 +1,5 @@
 import {
-  createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode,
+  createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode,
 } from 'react';
 import { SECTIONS, type SectionId } from '../i18n/content';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -28,6 +28,7 @@ export function useScroll() {
  */
 export function Scroll({ open, children }: { open: boolean; children: ReactNode }) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const mobile = useIsMobile();
   const [seen, setSeen] = useState<Set<SectionId>>(() => new Set());
   const [active, setActive] = useState<SectionId>('hero');
@@ -56,7 +57,7 @@ export function Scroll({ open, children }: { open: boolean; children: ReactNode 
           markSeen(p.id as SectionId);
         }
       });
-    }, mobile ? 0 : 900);
+    }, mobile ? 450 : 900);
     return () => clearTimeout(t);
   }, [open, mobile, markSeen]);
 
@@ -121,14 +122,39 @@ export function Scroll({ open, children }: { open: boolean; children: ReactNode 
     return () => removeEventListener('resize', onResize);
   }, [mobile]);
 
+  /**
+   * Mobile: play the hanging-scroll unroll once, when the visitor first opens the page (same look
+   * as the project modal). The progress value
+   * --p grows the paper's height up to the space between the rods, with the bottom rod following
+   * it in normal flow.
+   */
+  const unroll = useCallback((seconds: number) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    stage.style.setProperty('--unroll-dur', `${seconds}s`);
+    stage.classList.remove('unrolling');
+    void stage.offsetWidth; // restart the animation
+    stage.classList.add('unrolling');
+  }, []);
+
+
+  // Mobile: the first tap opens the scroll by unrolling it downward. Runs right after the commit
+  // rather than on the next animation frame, which a browser may hold back (leaving a blank page).
+  useLayoutEffect(() => {
+    if (mobile && open) unroll(1.3);
+  }, [mobile, open, unroll]);
+
+
   const goTo = useCallback(
     (id: SectionId) => {
       const el = document.getElementById(id);
       if (!el) return;
       if (mobile) {
+        // the scroll stays open (it unrolled once on entry); only the paper's content changes
+        if (id === activeRef.current) return;
         setActive(id);
         markSeen(id);
-        scrollTo({ top: 0 });
+        trackRef.current!.scrollTop = 0; // the page scrolls inside the paper on mobile
       } else {
         trackRef.current!.scrollTo({ left: el.offsetLeft, behavior: 'smooth' });
       }
@@ -201,8 +227,9 @@ export function Scroll({ open, children }: { open: boolean; children: ReactNode 
 
   return (
     <ScrollContext.Provider value={{ seen, active, goTo: jump }}>
-      <div className="stage">
+      <div className="stage" ref={stageRef}>
         <div className="roller l" />
+        <div className="mrod top" aria-hidden="true" />
         <div className="paper">
           <div className="track" ref={trackRef}>
             {children}
@@ -220,6 +247,7 @@ export function Scroll({ open, children }: { open: boolean; children: ReactNode 
             )}
           </div>
         </div>
+        <div className="mrod bottom" aria-hidden="true" />
         <div className="roller r" />
         <div className="tie" />
         <div className="arrows">
