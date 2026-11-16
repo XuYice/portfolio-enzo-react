@@ -106,7 +106,10 @@ a{color:inherit}
 .content{flex:0 1 860px; min-width:0; overflow-y:auto; padding-right:14px; display:flex; flex-direction:column; justify-content:safe center;
   scrollbar-width:thin; scrollbar-color:rgba(36,33,29,.28) transparent;
   /* fade the bottom edge like ink on paper instead of a hard cut; padding lets the last line scroll clear of it */
-  padding-bottom:32px; -webkit-mask-image:linear-gradient(#000 calc(100% - 40px),transparent); mask-image:linear-gradient(#000 calc(100% - 40px),transparent)}
+}
+/* only when there's more to scroll: fade the bottom edge like ink on paper instead of a hard cut;
+   the padding lets the last line scroll clear of the fade */
+.content.scrollable{padding-bottom:32px; -webkit-mask-image:linear-gradient(#000 calc(100% - 40px),transparent); mask-image:linear-gradient(#000 calc(100% - 40px),transparent)}
 .content:hover{scrollbar-color:rgba(179,50,42,.55) transparent}
 /* Safari (no scrollbar-color): thin ink stroke, no track */
 .content::-webkit-scrollbar{width:4px}
@@ -124,8 +127,8 @@ html[lang="zh"] p{font-size:17px; line-height:1.95}
 b{font-weight:600}
 
 /* reveal like ink soaking in */
-.reveal{opacity:0; filter:blur(5px); transform:translateY(8px); transition:opacity 1s ease, filter 1s ease, transform 1s ease}
-.seen .reveal{opacity:1; filter:none; transform:none}
+.reveal{opacity:0; transform:translateY(8px); transition:opacity 1s ease, transform 1s ease}
+.seen .reveal{opacity:1; transform:none}
 
 /* ---------- hero ---------- */
 .hero{flex-direction:column; justify-content:flex-start; gap:0; padding:56px clamp(40px,6vw,100px) 0}
@@ -136,7 +139,9 @@ b{font-weight:600}
 .tagline{font-size:18px; line-height:1.85; margin-top:14px; color:var(--ink-soft); max-width:46ch}
 html[lang="zh"] .tagline{font-size:18px}
 .landscape{flex:1; min-height:0; width:100%; margin-top:10px}
-.landscape svg{width:100%; height:100%; display:block}
+.landscape-art{position:relative; width:100%; height:100%}
+.landscape-art img,.landscape-art svg{position:absolute; inset:0; display:block; width:100%; height:100%}
+.landscape-art img{object-fit:contain; object-position:50% 100%}
 .hint{
   position:absolute; right:92px; top:50%; transform:translateY(-50%);
   font-size:14px; letter-spacing:.06em; color:var(--ink-soft); white-space:nowrap;
@@ -173,21 +178,22 @@ html[lang="zh"] .job li{font-size:15.5px; line-height:1.85}
 .job li::before{content:""; position:absolute; left:4px; top:.7em; width:7px; height:7px; border-radius:50%; background:var(--ink); opacity:.75}
 
 /* ---------- projects ---------- */
-.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+.grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px 16px}
+@media (max-width:1280px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:1100px){.grid{grid-template-columns:1fr 1fr}}
 .card{
-  position:relative; padding:22px 22px 18px; border:1px solid var(--ink-faint); background:rgba(255,255,255,.18); overflow:hidden;
+  position:relative; padding:18px 18px 14px; border:1px solid var(--ink-faint); background:rgba(255,255,255,.18); overflow:hidden;
   display:flex; flex-direction:column; align-items:flex-start; text-align:left; width:100%;
   font:inherit; color:inherit; cursor:pointer; transition:transform .3s, box-shadow .3s, border-color .3s;
 }
 .card:hover{transform:translateY(-3px); box-shadow:0 10px 24px rgba(60,40,10,.12); border-color:rgba(179,50,42,.35)}
 .card:focus-visible{outline:2px solid var(--red); outline-offset:3px}
-.card .more{margin-top:auto; padding-top:12px; font-size:14px; letter-spacing:.04em; color:var(--red); transition:transform .25s}
+.card .more{margin-top:auto; padding-top:8px; font-size:14px; letter-spacing:.04em; color:var(--red); transition:transform .25s}
 .card:hover .more{transform:translateX(4px)}
 .card .num{position:absolute; right:10px; top:-6px; font-family:var(--brush); font-size:96px; color:var(--ink); opacity:.07; line-height:1}
-.card h3{font-size:19px; font-weight:600}
+.card h3{font-size:17.5px; font-weight:600; line-height:1.35}
 html[lang="zh"] .card h3{font-size:19px}
-.card p{font-size:14.5px; line-height:1.75; margin-top:6px}
+.card p{font-size:14.5px; line-height:1.7; margin-top:6px; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; overflow:hidden}
 html[lang="zh"] .card p{font-size:14.5px}
 .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
 .tag{font-family:var(--serif); font-size:12.5px; padding:2px 9px; border:1px solid rgba(36,33,29,.35); border-radius:2px}
@@ -214,13 +220,13 @@ html[lang="zh"] .big-q{font-family:var(--brush); font-style:normal; font-size:cl
 .end span:not(.seal){font-family:var(--brush); font-size:30px; color:var(--ink-soft)}
 .panel.last .content{flex-basis:720px}
 .panel.exp .content{flex-basis:980px}
-.panel.wide .content{flex-basis:1120px}
+.panel.wide .content{flex-basis:1200px}
 
 
 
 /* ---------- ink-wash (水墨) decorations ---------- */
 .ink{position:absolute; pointer-events:none; z-index:0; opacity:0; transition:opacity 1.8s ease .3s}
-.ink svg{display:block; width:100%; height:100%}
+.ink img{display:block; width:100%; height:100%; user-select:none}
 .seen .ink{opacity:var(--o)}
 /* everything else in a panel paints above the ink (the hint keeps its own absolute position) */
 .panel > :not(.ink):not(.hint){position:relative; z-index:1}
@@ -287,7 +293,7 @@ html[lang="zh"] .big-q{font-family:var(--brush); font-style:normal; font-size:cl
 @keyframes unroll{from{--p:0}}
 @keyframes hang-in{from{opacity:0; transform:translateY(-14px)}}
 @keyframes rod-settle{40%{transform:translateY(4px)}}
-@keyframes ink-in{from{opacity:0; filter:blur(4px)}}
+@keyframes ink-in{from{opacity:0; transform:translateY(6px)}}
 @keyframes fade-in{from{opacity:0}}
 
 /* closing: roll back up, then the rods lift away (the dialog closes when 'rollup' ends) */
@@ -438,7 +444,7 @@ html[lang="zh"] .modal-body li{font-size:15.5px; line-height:1.85}
   .pager .prev svg{transform:scaleX(-1)}
   .pager .next{margin-left:auto; color:var(--red)}
   .vtitle{writing-mode:horizontal-tb; font-size:48px}
-  .content{overflow:visible; padding:0; -webkit-mask-image:none; mask-image:none}
+  .content,.content.scrollable{overflow:visible; padding:0; -webkit-mask-image:none; mask-image:none}
   p{font-size:16px; line-height:1.85}
 
   /* hero: smaller name on one line; painting cropped to the bridge so it isn't tiny */
@@ -450,7 +456,7 @@ html[lang="zh"] .modal-body li{font-size:15.5px; line-height:1.85}
   .role{font-size:17px}
   .tagline{font-size:16px; margin-top:12px}
   .landscape{flex:none; width:auto; height:auto; margin:auto -20px 0; padding-top:20px; overflow:hidden}
-  .landscape svg{width:130%; height:auto; margin-left:-15%}
+  .landscape-art{width:130%; height:auto; aspect-ratio:1000 / 340; margin-left:-15%}
 
   .job h3{font-size:18.5px}
   .job li{font-size:15px}

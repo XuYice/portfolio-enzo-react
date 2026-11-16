@@ -66,7 +66,8 @@ export function Projects() {
             <span className="num">{p.num}</span>
             <h3>{p.title}</h3>
             <p>{p.desc}</p>
-            <div className="tags">{p.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}</div>
+            {/* the card shows the main tags; the modal lists them all */}
+            <div className="tags">{p.tags.slice(0, 3).map((tag) => <span key={tag} className="tag">{tag}</span>)}</div>
             <span className="more">{t.ui.more} →</span>
           </button>
         ))}

@@ -21,6 +21,29 @@ export function Panel({ id, className = '', style, bare, decor = [], children }:
   const { t } = useLanguage();
   const ref = useRef<HTMLElement>(null);
 
+  // Mark the content box when it really overflows, so the bottom fade (and its extra padding) only
+  // appears when there is more to scroll. The padding is left out of the test so toggling it
+  // can't flip the result back and forth.
+  useEffect(() => {
+    const box = ref.current?.querySelector<HTMLElement>('.content');
+    if (!box) return;
+    const check = () => {
+      const pad = parseFloat(getComputedStyle(box).paddingBottom) || 0;
+      box.classList.toggle('scrollable', box.scrollHeight - pad > box.clientHeight + 2);
+    };
+    const ro = new ResizeObserver(check);
+    ro.observe(box);
+    [...box.children].forEach((c) => ro.observe(c));
+    // also on window resize and once fonts land (observer callbacks wait for a rendered frame)
+    addEventListener('resize', check);
+    document.fonts?.ready.then(check);
+    check();
+    return () => {
+      ro.disconnect();
+      removeEventListener('resize', check);
+    };
+  }, [t]);
+
   // Stagger the ink-in of every `.reveal` child.
   useEffect(() => {
     ref.current?.querySelectorAll<HTMLElement>('.reveal').forEach((el, i) => {

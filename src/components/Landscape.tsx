@@ -1,3 +1,5 @@
+import { svgDataUri } from './svgImage';
+
 const INK = '#24211d';
 
 // The deck is a quadratic curve from (300,292) through control (480,180) to (660,292).
@@ -7,10 +9,40 @@ const POSTS = Array.from({ length: 11 }, (_, i) => {
   return { x: 300 + 360 * t, y: 292 - 224 * t * (1 - t) };
 });
 
-/** Ink-wash scene: Chinese karst peaks ← moon bridge → Pão de Açúcar, with a walker crossing. */
+/**
+ * Ink-wash scene: Chinese karst peaks ← moon bridge → Pão de Açúcar, with a walker crossing.
+ * The painted part is a pre-rendered image (its ink filters are costly to repaint); the walker and
+ * the labels sit on a light, filter-free SVG layer with the same viewBox on top of it.
+ */
 export function Landscape() {
   return (
-    <svg viewBox="0 0 1000 340" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <div className="landscape-art" aria-hidden="true">
+      <img src={PAINTING} alt="" draggable={false} />
+      <svg viewBox="0 0 1000 340" preserveAspectRatio="xMidYMax meet">
+        <path id="walk-deck" d={DECK} fill="none" />
+        {/* walker: goes across, pauses, comes back */}
+        <g fill={INK}>
+          <g transform="translate(0,-3)">
+            <circle cx="0" cy="-19" r="3.6" />
+            <path d="M-3 -15 L3 -15 L4 -4 L-4 -4Z" />
+            <path d="M-2 -4 L-3 0 M2 -4 L3 0" stroke={INK} strokeWidth="2" />
+            <path d="M-5 -13 Q0 -16 5 -13" stroke="#b3322a" strokeWidth="2" fill="none" />
+          </g>
+          <animateMotion dur="16s" repeatCount="indefinite" keyPoints="0;1;1;0;0" keyTimes="0;.45;.5;.95;1" calcMode="linear">
+            <mpath href="#walk-deck" />
+          </animateMotion>
+        </g>
+        <text x="120" y="330" fontFamily="Ma Shan Zheng" fontSize="26" fill={INK} opacity=".6">中国</text>
+        <text x="800" y="335" fontFamily="Ma Shan Zheng" fontSize="26" fill={INK} opacity=".6">Brasil</text>
+      </svg>
+    </div>
+  );
+}
+
+/** The static, filtered part of the scene (rasterized once, see svgDataUri). */
+function Painting() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 340" preserveAspectRatio="xMidYMax meet">
       <defs>
         <filter id="ink">
           <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves={3} result="n" />
@@ -51,27 +83,13 @@ export function Landscape() {
 
       {/* moon bridge + its reflection */}
       <path d="M300 292 Q480 404 660 292" fill="none" stroke={INK} strokeWidth="3" opacity=".13" />
-      <path id="deck" d={DECK} fill="none" stroke={INK} strokeWidth="6" strokeLinecap="round" filter="url(#ink)" />
+      <path d={DECK} fill="none" stroke={INK} strokeWidth="6" strokeLinecap="round" filter="url(#ink)" />
       <path d="M300 274 Q480 162 660 274" fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />
       <g stroke={INK} strokeWidth="2">
         {POSTS.map(({ x, y }) => <line key={x} x1={x} y1={y} x2={x} y2={y - 18} />)}
       </g>
-
-      {/* walker: goes across, pauses, comes back */}
-      <g fill={INK}>
-        <g transform="translate(0,-3)">
-          <circle cx="0" cy="-19" r="3.6" />
-          <path d="M-3 -15 L3 -15 L4 -4 L-4 -4Z" />
-          <path d="M-2 -4 L-3 0 M2 -4 L3 0" stroke={INK} strokeWidth="2" />
-          <path d="M-5 -13 Q0 -16 5 -13" stroke="#b3322a" strokeWidth="2" fill="none" />
-        </g>
-        <animateMotion dur="16s" repeatCount="indefinite" keyPoints="0;1;1;0;0" keyTimes="0;.45;.5;.95;1" calcMode="linear">
-          <mpath href="#deck" />
-        </animateMotion>
-      </g>
-
-      <text x="120" y="330" fontFamily="Ma Shan Zheng" fontSize="26" fill={INK} opacity=".6">中国</text>
-      <text x="800" y="335" fontFamily="Ma Shan Zheng" fontSize="26" fill={INK} opacity=".6">Brasil</text>
     </svg>
   );
 }
+
+const PAINTING = svgDataUri(<Painting />);

@@ -2,16 +2,18 @@
  * Ink-wash (水墨) decorations painted behind a panel's content: mountains, bamboo, plum branch,
  * wash stains, birds. Purely decorative, kept faint and at the edges so text stays readable.
  */
+import type { CSSProperties } from 'react';
+import { svgDataUri } from './svgImage';
+
 const INK = '#24211d';
 const RED = '#b3322a';
 
 export type InkKind = 'mountains' | 'bamboo' | 'plum' | 'wash' | 'birds' | 'night';
 
 export function InkDecor({ kind }: { kind: InkKind }) {
-  const Art = ART[kind];
   return (
     <div className={`ink ink-${kind}`} aria-hidden="true">
-      <Art />
+      <img src={IMAGES[kind]} alt="" draggable={false} style={FIT[kind]} />
     </div>
   );
 }
@@ -83,7 +85,7 @@ function Birds({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
 
 function Mountains() {
   return (
-    <svg viewBox="0 0 1000 400" preserveAspectRatio="xMidYMax slice">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMax slice">
       <Filters id="mt" />
       <path d={ridge(1000, 220, 150, 7, 7)} fill="url(#mt-fade)" opacity=".35" filter="url(#mt-soft)" />
       <path d={ridge(1000, 285, 110, 21, 9)} fill="url(#mt-fade)" opacity=".55" filter="url(#mt-ink)" />
@@ -121,7 +123,7 @@ function Bamboo() {
     />
   );
   return (
-    <svg viewBox="0 0 220 600" preserveAspectRatio="xMaxYMin meet">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 600" preserveAspectRatio="xMaxYMin meet">
       <Filters id="bb" />
       <g filter="url(#bb-ink)">
         {stalk(150, 13, 3, [110, 120, 115, 125, 130])}
@@ -146,7 +148,7 @@ function Plum() {
     </g>
   );
   return (
-    <svg viewBox="0 0 420 320" preserveAspectRatio="xMaxYMin meet">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" preserveAspectRatio="xMaxYMin meet">
       <Filters id="pl" />
       <g fill="none" stroke={INK} strokeLinecap="round" filter="url(#pl-ink)">
         <path d="M430 20 Q340 40 280 90 Q230 130 160 140" strokeWidth="9" />
@@ -164,7 +166,7 @@ function Plum() {
 
 function Wash() {
   return (
-    <svg viewBox="0 0 1000 600" preserveAspectRatio="none">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
       <Filters id="ws" />
       <g filter="url(#ws-wash)" fill={INK}>
         <ellipse cx="960" cy="40" rx="220" ry="140" opacity=".5" />
@@ -177,7 +179,7 @@ function Wash() {
 
 function FlyingBirds() {
   return (
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMaxYMin meet">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" preserveAspectRatio="xMaxYMin meet">
       <Birds x={120} y={80} s={1.6} />
       <Birds x={260} y={130} s={1} />
     </svg>
@@ -187,7 +189,7 @@ function FlyingBirds() {
 /** Pale ridges for the dark page background around the scroll. */
 function Night() {
   return (
-    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
       <defs>
         <linearGradient id="nt-fade" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#e9dcc3" stopOpacity="1" />
@@ -213,4 +215,25 @@ const ART: Record<InkKind, () => JSX.Element> = {
   wash: Wash,
   birds: FlyingBirds,
   night: Night,
+};
+
+/**
+ * Each piece is rasterized once as an image: their ink filters are expensive, and inline they'd
+ * be recomputed on every repaint of the unrolling/sliding scroll.
+ */
+const IMAGES = Object.fromEntries(
+  (Object.keys(ART) as InkKind[]).map((k) => {
+    const Art = ART[k];
+    return [k, svgDataUri(<Art />)];
+  }),
+) as Record<InkKind, string>;
+
+/** How each image fits its box (mirrors the SVG's preserveAspectRatio). */
+const FIT: Record<InkKind, CSSProperties> = {
+  mountains: { objectFit: 'cover', objectPosition: '50% 100%' },
+  bamboo: { objectFit: 'contain', objectPosition: '100% 0' },
+  plum: { objectFit: 'contain', objectPosition: '100% 0' },
+  wash: { objectFit: 'fill' },
+  birds: { objectFit: 'contain', objectPosition: '100% 0' },
+  night: { objectFit: 'cover', objectPosition: '50% 100%' },
 };
